@@ -57,12 +57,14 @@ class AppProtocol (typing.Protocol):
     This protocol defines the base line of functionality.
     """
     async def start_progress(
-        self, show_completion: bool = False, message: str = None): ...    
+        self, show_completion: bool = False, message: str = None): ...
 
     async def stop_progress(self): ...
 
-    async def update_progress(self, completion: float |
-                              None = None, message: str | None = None): ...
+    async def update_progress(
+        self,
+        completion: typing.Optional[float] = None,
+        message: typing.Optional[str] = None): ...
 
     async def details(self, s: str): ...
 
@@ -87,9 +89,10 @@ class StyledApp(AppProtocol):
     application protocol defined above. This application outputs styled 
     messages and animated progress indicators for tty compatible streams.
     """
+
     def __init__(self,
                  out: OutputStream = None,
-                 terminal_width: int | None = None,
+                 terminal_width: typing.Optiona[int] = None,
                  refresh_interval: float = 0.2,
                  running_indicator_chars: str = RUNNING_INDICATOR_MOVING_DOTS,
                  progress_bar_chars: str = PROGRESS_BAR_CHARS,
@@ -176,7 +179,8 @@ class StyledApp(AppProtocol):
             self._stop_requested = True
         await self._progress_task
 
-    async def update_progress(self, completion: float | None = None, message: str | None = None):
+    async def update_progress(self, completion: typing.Optiona[float] = None,
+                              message: typing.Optiona[str] = None):
         if completion is not None:
             completion = float(completion)
             if completion < 0 or completion > 1:
@@ -292,7 +296,8 @@ class UnstyledApp(AppProtocol):
     async def stop_progress(self):
         pass
 
-    async def update_progress(self, completion: float | None = None, message: str | None = None):
+    async def update_progress(self, completion: typing.Optiona[float] = None,
+                              message: typing.Optiona[str] = None):
         pass
 
     async def details(self, s: str):
@@ -321,7 +326,7 @@ class UnstyledApp(AppProtocol):
         await self.write(line + '\n')
 
 
-def create_app(out: OutputStream | None = None, **kwargs) -> AppProtocol:
+def create_app(out: typing.Optiona[OutputStream] = None, **kwargs) -> AppProtocol:
     out = default_output_stream(out)
     if out.isatty():
         return StyledApp(**kwargs)
