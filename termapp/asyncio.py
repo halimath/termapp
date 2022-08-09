@@ -92,7 +92,7 @@ class StyledApp(AppProtocol):
 
     def __init__(self,
                  out: OutputStream = None,
-                 terminal_width: typing.Optiona[int] = None,
+                 terminal_width: typing.Optional[int] = None,
                  refresh_interval: float = 0.2,
                  running_indicator_chars: str = RUNNING_INDICATOR_MOVING_DOTS,
                  progress_bar_chars: str = PROGRESS_BAR_CHARS,
@@ -179,8 +179,8 @@ class StyledApp(AppProtocol):
             self._stop_requested = True
         await self._progress_task
 
-    async def update_progress(self, completion: typing.Optiona[float] = None,
-                              message: typing.Optiona[str] = None):
+    async def update_progress(self, completion: typing.Optional[float] = None,
+                              message: typing.Optional[str] = None):
         if completion is not None:
             completion = float(completion)
             if completion < 0 or completion > 1:
@@ -296,8 +296,8 @@ class UnstyledApp(AppProtocol):
     async def stop_progress(self):
         pass
 
-    async def update_progress(self, completion: typing.Optiona[float] = None,
-                              message: typing.Optiona[str] = None):
+    async def update_progress(self, completion: typing.Optional[float] = None,
+                              message: typing.Optional[str] = None):
         pass
 
     async def details(self, s: str):
@@ -326,7 +326,7 @@ class UnstyledApp(AppProtocol):
         await self.write(line + '\n')
 
 
-def create_app(out: typing.Optiona[OutputStream] = None, **kwargs) -> AppProtocol:
+def create_app(out: typing.Optional[OutputStream] = None, **kwargs) -> AppProtocol:
     out = default_output_stream(out)
     if out.isatty():
         return StyledApp(**kwargs)
