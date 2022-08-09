@@ -24,6 +24,9 @@ jobs:
           
       - name: Run tests
         run: python -m termapp
+
+      - name: Install build
+        run: pip install build
       
       - name: Build dist
         run: python -m build
