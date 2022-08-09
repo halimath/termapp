@@ -8,6 +8,6 @@ something more powerful (such as glances) you should go for the great
 ``curses`` library.
 """
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 __author__ = 'Alexander Metzner'
 
