@@ -21,7 +21,7 @@ class OutputStream(typing.Protocol):
     def write(self, s: typing.AnyStr) -> int: ...
 
 
-def default_output_stream(out: OutputStream | None = None) -> OutputStream:
+def default_output_stream(out: typing.Optional[OutputStream] = None) -> OutputStream:
     """
     Either returns ``out`` or ``sys.stdout`` but with a "lazy" resolving. That
     means, that `sys.stdout`` will not be resolved during import time but
