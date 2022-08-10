@@ -78,9 +78,17 @@ class AppProtocol (typing.Protocol):
 
     async def failure(self, s): ...
 
-    async def write(self, s: typing.AnyStr): ...
+    async def write(self, s: typing.AnyStr, *
+                    styles: typing.Iterable[typing.AnyStr]): ...
 
-    async def write_line(self, line=''): ...
+    async def write_line(self, line: typing.Optional[typing.AnyStr] = '', *
+                         styles: typing.Iterable[typing.AnyStr]): ...
+
+    @asynccontextmanager
+    async def no_cursor(self): ...
+
+    @asynccontextmanager
+    async def apply_styles(self, *styles: str): ...
 
 
 class StyledApp(AppProtocol):
@@ -96,9 +104,9 @@ class StyledApp(AppProtocol):
                  refresh_interval: float = 0.2,
                  running_indicator_chars: str = RUNNING_INDICATOR_MOVING_DOTS,
                  progress_bar_chars: str = PROGRESS_BAR_CHARS,
-                 details_prefix: str = '\u2026 ',
+                 details_prefix: str = '  ',
                  details_styles: typing.Iterable[str] = (DEFAULT,),
-                 info_prefix: str = '',
+                 info_prefix: str = '\u2192 ',
                  info_styles: typing.Iterable[str] = (FG_CYAN,),
                  warn_prefix: str = '\u26A0 ',
                  warn_styles: typing.Iterable[str] = (FG_YELLOW,),
@@ -153,6 +161,7 @@ class StyledApp(AppProtocol):
             self._show_completion = show_completion
             self._completion = 0.0
             self._progress_message = message
+            await self._out.write('\n')
             await self._out.write(DISABLE_CURSOR)
 
         self._progress_task = asyncio.create_task(self._run_progress_loop())
@@ -230,34 +239,62 @@ class StyledApp(AppProtocol):
 
     async def info(self, s: str):
         async with self.apply_styles(*self._info_styles):
+            if not self._running:
+                await self.write('\n')    
+
             await self.write_line(self._info_prefix + s)
 
     async def warn(self, s: str):
         async with self.apply_styles(*self._warn_styles):
+            if not self._running:
+                await self.write('\n')    
             await self.write_line(self._warn_prefix + s)
 
     async def danger(self, s):
         async with self.apply_styles(*self._danger_styles):
+            if not self._running:
+                await self.write('\n')    
+
             await self.write_line(self._danger_prefix + s)
 
     async def success(self, s):
         async with self.apply_styles(*self._success_styles):
+            if not self._running:
+                await self.write('\n')    
+
             await self.write_line(self._success_prefix + s)
 
     async def failure(self, s):
         async with self.apply_styles(*self._failure_styles):
+            if not self._running:
+                await self.write('\n')    
+
             await self.write_line(self._failure_prefix + s)
 
-    async def write(self, s: typing.AnyStr):
+    async def write(self, s: typing.AnyStr, *styles: typing.Iterable[typing.AnyStr]):
         async with self._lock:
             if self._running:
                 await self._clear_progress_view()
+
+            if len(styles) > 0:
+                await self._out.write(activate_styles(*styles))
+
             await self._out.write(s)
+
+            if len(styles) > 0:
+                await self._out.write(activate_styles(RESET))
+
             if self._running and not s.endswith('\n'):
                 await self._out.write('\n')
 
-    async def write_line(self, line=''):
+    async def write_line(self, line='', *styles: typing.Iterable[typing.AnyStr]):
+        if len(styles) > 0:
+            await self._out.write(activate_styles(*styles))
+
         await self.write(line + '\n')
+
+        if len(styles) > 0:
+            await self._out.write(activate_styles(RESET))
 
     @asynccontextmanager
     async def no_cursor(self):
@@ -324,6 +361,14 @@ class UnstyledApp(AppProtocol):
 
     async def write_line(self, line=''):
         await self.write(line + '\n')
+
+    @asynccontextmanager
+    async def no_cursor(self):
+        yield self
+
+    @asynccontextmanager
+    async def apply_styles(self, *styles: str):
+        yield self
 
 
 def create_app(out: typing.Optional[OutputStream] = None, **kwargs) -> AppProtocol:
