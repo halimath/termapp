@@ -312,8 +312,8 @@ class StyledApp(AppProtocol):
 class UnstyledApp(AppProtocol):
     def __init__(self,
                  out: OutputStream = None,
-                 details_prefix: str = '\u2026 ',
-                 info_prefix: str = '',
+                 details_prefix: str = '  ',
+                 info_prefix: str = '\u2192 ',
                  warn_prefix: str = '\u26A0 ',
                  danger_prefix: str = '\u26A0 ',
                  success_prefix: str = '\u2713 ',
@@ -355,11 +355,11 @@ class UnstyledApp(AppProtocol):
     async def failure(self, s):
         await self.write_line(self._failure_prefix + s)
 
-    async def write(self, s: typing.AnyStr):
+    async def write(self, s: typing.AnyStr, *styles: typing.Iterable[typing.AnyStr]):
         await self._out.write(s)
         await self._out.flush()
 
-    async def write_line(self, line=''):
+    async def write_line(self, line='', *styles: typing.Iterable[typing.AnyStr]):
         await self.write(line + '\n')
 
     @asynccontextmanager
