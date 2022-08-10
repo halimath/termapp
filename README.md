@@ -19,23 +19,34 @@ pip install termapp
 ```python
 import asyncio
 
+from termapp import __version__
+from termapp.styles import BOLD
 from termapp.asyncio import create_app
 
 app = create_app()
 
 
 async def start():
-    await app.info('info')
-    await app.details('additional details')
-    await app.warn('warn')
-    await app.danger('error')
-    await app.success('success')
-    await app.failure('failure')
+    await app.write_line(f"termapp demo app v{__version__}", BOLD)
+    await app.write_line('This app demonstrates the capabilities of the termapp module.')
 
-    await app.start_progress(show_completion=True)    
+    await app.info('info is used to introduce an important step in the app.')
+    await app.details('details can be used to add additional informationen.')
+
+    await app.warn('warn shows a warning')
+    await app.details('which can also be enhanced with a details message.')
+
+    await app.danger('error reports an error message')
+    await app.details('which can also be enhanced with a details message.')
+
+    await app.start_progress(show_completion=True)
     await asyncio.sleep(5)
     await app.stop_progress()
-    await app.success('all done')
+    await app.details('Longer operation finished.')
+
+    await app.success('success is used to indicate success')
+
+    await app.failure('failure is used to indicate the operation failed')
 
 
 async def warn_later():
